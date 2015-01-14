@@ -1,0 +1,5 @@
+Revision history for Perl module MetaCPAN::Helper
+
+0.01 2015-01-14 NEILB
+    - First release to CPAN, with module2dist method.
+
