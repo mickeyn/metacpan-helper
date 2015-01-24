@@ -4,6 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 use Moo;
+use Carp;
 
 has client => (
     is => 'ro',
@@ -27,6 +28,36 @@ sub module2dist
     my $module     = $result_set->next                      || return undef;
 
     return $module->distribution || undef;
+}
+
+sub dist2releases {
+    my $self      = shift;
+    my $dist_name = shift;
+    $dist_name and !ref($dist_name)
+        or croak "invalid distribution name value";
+
+    my $filter   = { distribution => $dist_name };
+    my $releases = $self->client->release($filter);
+
+    return $releases;
+}
+
+sub dist2latest_release {
+    my $self      = shift;
+    my $dist_name = shift;
+    $dist_name and !ref($dist_name)
+        or croak "invalid distribution name value";
+
+    my $filter = {
+        all => [
+            { distribution => $dist_name },
+            { status       => "latest" }
+        ]
+    };
+
+    my $release = $self->client->release($filter);
+
+    return ( $release->total == 1 ? $release->next : undef );
 }
 
 1;
@@ -72,6 +103,17 @@ name produced by L<CPAN::DistnameInfo>, then be aware that this method
 returns the name according to C<CPAN::DistnameInfo>.
 This doesn't happen very often (less than 0.5% of CPAN distributions).
 
+=head2 dist2releases( $DIST_NAME )
+
+Takes the name of a distribution, and returns the L<MetaCPAN::Client::ResultSet>
+iterator of all releases (as L<MetaCPAN::Client::Release> objects)
+associated with that distribution.
+
+=head2 dist2latest_release( $DIST_NAME )
+
+Takes the name of a distribution, and returns the L<MetaCPAN::Client::Release>
+object of the "latest" release of that distribution.
+
 =head1 SEE ALSO
 
 L<MetaCPAN::Client> - the definitive client for querying L<MetaCPAN|https://metacpan.org>.
@@ -83,6 +125,7 @@ L<https://github.com/CPAN-API/metacpan-helper>
 =head1 CONTRIBUTORS
 
 L<Neil Bowers|https://metacpan.org/author/NEILB>
+L<Mickey Nasriachi|https://metacpan.org/author/MICKEY>
 
 =head1 COPYRIGHT AND LICENSE
 
