@@ -14,9 +14,14 @@ has client => (
     },
 );
 
-sub module2dist
-{
-    my ($self, $module_name) = @_;
+sub module2dist {
+    my $self = shift;
+    my $_m   = shift;
+    ref($_m) eq 'MetaCPAN::Client::Module' and return $_m->distribution;
+    ref($_m) and croak "invalid module name";
+
+    my $module_name = $_m;
+
     my $query      = { all => [
                            {        status => 'latest'     },
                            {      maturity => 'released'   },
@@ -32,9 +37,7 @@ sub module2dist
 
 sub dist2releases {
     my $self      = shift;
-    my $dist_name = shift;
-    $dist_name and !ref($dist_name)
-        or croak "invalid distribution name value";
+    my $dist_name = _get_dist_name(shift);
 
     my $filter   = { distribution => $dist_name };
     my $releases = $self->client->release($filter);
@@ -44,9 +47,7 @@ sub dist2releases {
 
 sub dist2latest_release {
     my $self      = shift;
-    my $dist_name = shift;
-    $dist_name and !ref($dist_name)
-        or croak "invalid distribution name value";
+    my $dist_name = _get_dist_name(shift);
 
     my $filter = {
         all => [
@@ -58,6 +59,13 @@ sub dist2latest_release {
     my $release = $self->client->release($filter);
 
     return ( $release->total == 1 ? $release->next : undef );
+}
+
+sub _get_dist_name {
+    my $val = shift;
+    ref($val) eq 'MetaCPAN::Client::Distribution' and return $val->name;
+    !ref($val) and return $val;
+    croak "invalid distribution name";
 }
 
 1;
@@ -90,9 +98,10 @@ This class is aimed at people writing smaller one-off scripts.
 
 =head1 METHODS
 
-=head2 module2dist( $MODULE_NAME )
+=head2 module2dist( $MODULE_NAME | $MODULE_OBJ )
 
-Takes the name of a module, and returns the name of the distribution which
+Takes the name of a module or a L<MetaCPAN::Client::Module> object,
+and returns the name of the distribution which
 I<currently> contains that module, according to the MetaCPAN API.
 
 At the moment this will ignore any developer releases,
@@ -103,15 +112,17 @@ name produced by L<CPAN::DistnameInfo>, then be aware that this method
 returns the name according to C<CPAN::DistnameInfo>.
 This doesn't happen very often (less than 0.5% of CPAN distributions).
 
-=head2 dist2releases( $DIST_NAME )
+=head2 dist2releases( $DIST_NAME | $DIST_OBJ )
 
-Takes the name of a distribution, and returns the L<MetaCPAN::Client::ResultSet>
-iterator of all releases (as L<MetaCPAN::Client::Release> objects)
+Takes the name of a distribution or a L<MetaCPAN::Client::Distribution> object,
+and returns the L<MetaCPAN::Client::ResultSet> iterator of all releases
+(as L<MetaCPAN::Client::Release> objects)
 associated with that distribution.
 
-=head2 dist2latest_release( $DIST_NAME )
+=head2 dist2latest_release( $DIST_NAME | $DIST_OBJ )
 
-Takes the name of a distribution, and returns the L<MetaCPAN::Client::Release>
+Takes the name of a distribution or a L<MetaCPAN::Client::Distribution> object,
+and returns the L<MetaCPAN::Client::Release>
 object of the "latest" release of that distribution.
 
 =head1 SEE ALSO
