@@ -124,8 +124,17 @@ L<https://github.com/CPAN-API/metacpan-helper>
 
 =head1 CONTRIBUTORS
 
+=over 4
+
+=item *
+
 L<Neil Bowers|https://metacpan.org/author/NEILB>
+
+=item *
+
 L<Mickey Nasriachi|https://metacpan.org/author/MICKEY>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
