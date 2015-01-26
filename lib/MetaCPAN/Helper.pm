@@ -86,6 +86,18 @@ sub dist2latest_release {
     return ( $release->total == 1 ? $release->next : undef );
 }
 
+sub dist2favorite_count {
+    my $self      = shift;
+    my $dist_name = _get_dist_name(shift);
+
+    my $filter = { distribution => $dist_name };
+
+    my $favorite = $self->client->favorite($filter);
+
+    return ( ref $favorite ? $favorite->total : undef );
+}
+
+
 sub _get_dist_name {
     my $val = shift;
     ref($val) eq 'MetaCPAN::Client::Distribution' and return $val->name;
@@ -159,6 +171,11 @@ associated with that distribution.
 Takes the name of a distribution or a L<MetaCPAN::Client::Distribution> object,
 and returns the L<MetaCPAN::Client::Release>
 object of the "latest" release of that distribution.
+
+=head2 dist2favorite_count( $DIST_NAME | $DIST_OBJ )
+
+Takes the name of a distribution or a L<MetaCPAN::Client::Distribution> object,
+and returns the favorites count for that distribution.
 
 =head1 SEE ALSO
 
