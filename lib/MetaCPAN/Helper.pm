@@ -35,6 +35,22 @@ sub module2dist {
     return $module->distribution || undef;
 }
 
+sub release2repo {
+    my $self = shift;
+    my $_r   = shift;
+
+    my $release = ref($_r) eq 'MetaCPAN::Client::Release'
+        ? $_r
+        : !ref($_r)
+            ? $self->client->release($_r)
+            : croak "invalid release name";
+
+    my $res = $release->resources || return undef;
+    my $rep = $res->{repository}  || return undef;
+
+    return ( $rep->{url} || undef );
+}
+
 sub dist2releases {
     my $self      = shift;
     my $dist_name = _get_dist_name(shift);
@@ -111,6 +127,11 @@ If the distribution name in the dist's metadata doesn't match the
 name produced by L<CPAN::DistnameInfo>, then be aware that this method
 returns the name according to C<CPAN::DistnameInfo>.
 This doesn't happen very often (less than 0.5% of CPAN distributions).
+
+=head release2repo( $RELEASE_NAME | $RELEASE_OBJ )
+
+Takes the name of a release or a L<MetaCPAN::Client::Release> object,
+and returns the repo URL string or undef if not found.
 
 =head2 dist2releases( $DIST_NAME | $DIST_OBJ )
 
