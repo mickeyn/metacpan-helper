@@ -51,6 +51,15 @@ sub release2repo {
     return ( $rep->{url} || undef );
 }
 
+sub dist2repo {
+    my $self      = shift;
+    my $dist_name = _get_dist_name(shift);
+
+    my $lr = $self->dist2latest_release($dist_name);
+
+    return $self->release2repo($lr);
+}
+
 sub dist2releases {
     my $self      = shift;
     my $dist_name = _get_dist_name(shift);
@@ -132,6 +141,11 @@ This doesn't happen very often (less than 0.5% of CPAN distributions).
 
 Takes the name of a release or a L<MetaCPAN::Client::Release> object,
 and returns the repo URL string or undef if not found.
+
+=head dist2repo( $DIST_NAME | $DIST_OBJ )
+
+Takes the name of a distribution or a L<MetaCPAN::Client::Distribution> object,
+and returns the repo URL string or undef if not found, of its latest release.
 
 =head2 dist2releases( $DIST_NAME | $DIST_OBJ )
 
