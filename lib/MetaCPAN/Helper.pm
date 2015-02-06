@@ -36,14 +36,8 @@ sub module2dist {
 }
 
 sub release2repo {
-    my $self = shift;
-    my $_r   = shift;
-
-    my $release = ref($_r) eq 'MetaCPAN::Client::Release'
-        ? $_r
-        : !ref($_r)
-            ? $self->client->release($_r)
-            : croak "invalid release name";
+    my $self    = shift;
+    my $release = $self->_get_release_object(shift);
 
     my $res = $release->resources || return undef;
     my $rep = $res->{repository}  || return undef;
@@ -53,7 +47,7 @@ sub release2repo {
 
 sub dist2repo {
     my $self      = shift;
-    my $dist_name = _get_dist_name(shift);
+    my $dist_name = $self->_get_dist_name(shift);
 
     my $lr = $self->dist2latest_release($dist_name);
 
@@ -62,7 +56,7 @@ sub dist2repo {
 
 sub dist2releases {
     my $self      = shift;
-    my $dist_name = _get_dist_name(shift);
+    my $dist_name = $self->_get_dist_name(shift);
 
     my $filter   = { distribution => $dist_name };
     my $releases = $self->client->release($filter);
@@ -72,7 +66,7 @@ sub dist2releases {
 
 sub dist2latest_release {
     my $self      = shift;
-    my $dist_name = _get_dist_name(shift);
+    my $dist_name = $self->_get_dist_name(shift);
 
     my $filter = {
         all => [
@@ -88,7 +82,7 @@ sub dist2latest_release {
 
 sub dist2favorite_count {
     my $self      = shift;
-    my $dist_name = _get_dist_name(shift);
+    my $dist_name = $self->_get_dist_name(shift);
 
     my $filter = { distribution => $dist_name };
 
@@ -99,11 +93,41 @@ sub dist2favorite_count {
 
 
 sub _get_dist_name {
-    my $val = shift;
-    ref($val) eq 'MetaCPAN::Client::Distribution' and return $val->name;
+    my $self = shift;
+    my $val  = shift;
+
+    ref($val) eq 'MetaCPAN::Client::Distribution'
+        and return $val->name;
+
     !ref($val) and return $val;
+
     croak "invalid distribution name";
 }
+
+sub _get_module_name {
+    my $self = shift;
+    my $val  = shift;
+
+    ref($val) eq 'MetaCPAN::Client::Module'
+        and return $val->name;
+
+    !ref($val) and return $val;
+
+    croak "invalid module name";
+}
+
+sub _get_release_object {
+    my $self = shift;
+    my $val  = shift;
+
+    ref($val) eq 'MetaCPAN::Client::Release'
+        and return $val;
+
+    ref($val) and croak "invalid release name";
+
+    return $self->client->release($val);
+}
+
 
 1;
 
